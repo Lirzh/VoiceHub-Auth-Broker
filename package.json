@@ -1,7 +1,7 @@
 {
   "name": "voicehub-auth-broker",
   "version": "1.0.0",
-  "description": "OAuth broker service for VoiceHub",
+  "description": "VoiceHub 的 OAuth 中转服务",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js"

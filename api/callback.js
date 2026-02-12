@@ -1,75 +1,75 @@
 const CryptoJS = require('crypto-js');
 const url = require('url');
 
-// Vercel Serverless Function Handler
+// Vercel Serverless 函数处理程序
 module.exports = (req, res) => {
-    // Enable CORS just in case, though usually not needed for redirects
+    // 启用 CORS 以防万一，虽然重定向通常不需要
     res.setHeader('Access-Control-Allow-Origin', '*');
     
-    // Check method
+    // 检查请求方法
     if (req.method !== 'GET') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
+        return res.status(405).json({ error: '方法不允许' });
     }
 
-    // Get Secret
+    // 获取密钥
     const SECRET_KEY = process.env.OAUTH_STATE_SECRET;
     if (!SECRET_KEY) {
-        console.error('Configuration Error: OAUTH_STATE_SECRET is missing');
-        return res.status(500).json({ error: 'Server Configuration Error' });
+        console.error('配置错误：缺少 OAUTH_STATE_SECRET');
+        return res.status(500).json({ error: '服务器配置错误' });
     }
 
-    // Parse Query
-    // Vercel req.query is already parsed object
+    // 解析查询参数
+    // Vercel req.query 已经是解析后的对象
     const { code, state } = req.query;
 
     if (!code || !state) {
-        return res.status(400).json({ error: 'Missing code or state parameter' });
+        return res.status(400).json({ error: '缺少 code 或 state 参数' });
     }
 
     try {
-        // Decrypt State
-        // IMPORTANT: The state passed from VoiceHub must be URL-safe encoded if needed, 
-        // but here we assume standard encrypted string which might contain special chars.
-        // Usually OAuth providers return state exactly as sent.
+        // 解密 State
+        // 重要：从 VoiceHub 传递的 state 必须是 URL 安全编码的（如果需要），
+        // 但这里我们假设是标准的加密字符串，可能包含特殊字符。
+        // 通常 OAuth 提供商会原样返回 state。
         
-        // Handle potential space vs plus issue in URL decoding if not handled by framework
+        // 处理 URL 解码中潜在的空格与加号问题（如果框架未处理）
         const rawState = state.replace(/ /g, '+');
         
         const bytes = CryptoJS.AES.decrypt(rawState, SECRET_KEY);
         const jsonStr = bytes.toString(CryptoJS.enc.Utf8);
 
         if (!jsonStr) {
-            throw new Error('Decryption resulted in empty string');
+            throw new Error('解密结果为空字符串');
         }
 
         const payload = JSON.parse(jsonStr);
         const target = payload.target;
 
         if (!target) {
-            throw new Error('No target origin found in state payload');
+            throw new Error('在 state 负载中未找到目标来源');
         }
 
-        // Security Check (Optional but Recommended)
-        // You can restrict targets to your specific domains if needed
+        // 安全检查（可选但推荐）
+        // 如果需要，可以将目标限制为特定域名
         // const ALLOWED_DOMAINS = ['.vercel.app', '.netlify.app', 'localhost'];
         // if (!ALLOWED_DOMAINS.some(d => target.includes(d))) { ... }
 
-        // Construct Redirect URL
-        // We preserve the code and state to pass them back to the original app
+        // 构建重定向 URL
+        // 我们保留 code 和 state 以将它们传回原始应用
         const redirectUrl = `${target}/api/auth/github/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(rawState)}`;
 
-        // Perform Redirect
+        // 执行重定向
         res.statusCode = 302;
         res.setHeader('Location', redirectUrl);
         res.end();
 
     } catch (error) {
-        console.error('Broker Logic Error:', error.message);
-        console.error('State received:', state);
+        console.error('Broker 逻辑错误:', error.message);
+        console.error('收到的 State:', state);
         
         return res.status(400).json({ 
-            error: 'Invalid request', 
-            details: 'Failed to validate state parameter. The link may have expired or is invalid.' 
+            error: '无效请求', 
+            details: '无法验证 state 参数。链接可能已过期或无效。' 
         });
     }
 };

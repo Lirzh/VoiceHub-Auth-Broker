@@ -1,6 +1,6 @@
 # VoiceHub Auth Broker
 
-这是一个轻量级的 OAuth 回调中转服务，专门用于解决 VoiceHub 项目在多环境（Vercel, Netlify, Localhost）部署时，GitHub OAuth App 只能配置单一回调地址的问题。
+这是一个轻量级的 OAuth 回调中转服务，专门用于解决 VoiceHub 项目在多环境部署时，GitHub OAuth App 只能配置单一回调地址的问题。
 
 ## 🚀 一键部署到 Vercel
 
@@ -10,8 +10,8 @@
 
 部署后，你需要在 Vercel 的项目设置中配置以下环境变量：
 
-| 变量名 | 说明 |
-| :--- | :--- |
+| 变量名                  | 说明                                                |
+|:---------------------|:--------------------------------------------------|
 | `OAUTH_STATE_SECRET` | **必须**。用于解密 State 参数的密钥。必须与 VoiceHub 主项目中的配置完全一致。 |
 
 ## 🔗 连接 GitHub App
