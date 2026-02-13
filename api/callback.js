@@ -44,6 +44,7 @@ module.exports = (req, res) => {
 
         const payload = JSON.parse(jsonStr);
         const target = payload.target;
+        const provider = payload.provider || 'github'; // 默认为 github 以兼容旧版
 
         if (!target) {
             throw new Error('在 state 负载中未找到目标来源');
@@ -56,7 +57,7 @@ module.exports = (req, res) => {
 
         // 构建重定向 URL
         // 我们保留 code 和 state 以将它们传回原始应用
-        const redirectUrl = `${target}/api/auth/github/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(rawState)}`;
+        const redirectUrl = `${target}/api/auth/${provider}/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(rawState)}`;
 
         // 执行重定向
         res.statusCode = 302;
