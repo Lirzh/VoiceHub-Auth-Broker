@@ -1,3 +1,37 @@
+// 在本地运行时从项目根目录加载 `.env`（不使用任何外部依赖），
+// 并且在 Vercel 或生产环境中不执行该加载，以保证部署不受影响。
+(function loadLocalEnv() {
+    try {
+        const isVercel = typeof process.env.VERCEL !== 'undefined';
+        const isProduction = process.env.NODE_ENV === 'production';
+        if (isVercel || isProduction) return;
+
+        const fs = require('fs');
+        const path = require('path');
+        const envPath = path.resolve(__dirname, '../', '.env');
+        if (!fs.existsSync(envPath)) return;
+
+        const content = fs.readFileSync(envPath, { encoding: 'utf8' });
+        content.split(/\r?\n/).forEach((line) => {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) return;
+            const idx = trimmed.indexOf('=');
+            if (idx === -1) return;
+            let key = trimmed.slice(0, idx).trim();
+            let val = trimmed.slice(idx + 1).trim();
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1);
+            }
+            if (typeof process.env[key] === 'undefined') {
+                process.env[key] = val;
+            }
+        });
+    } catch (e) {
+        // 不应阻塞启动；只在控制台记录错误以便调试
+        console.error('加载本地 .env 失败:', e && e.message ? e.message : e);
+    }
+})();
+
 const CryptoJS = require('crypto-js');
 const url = require('url');
 
