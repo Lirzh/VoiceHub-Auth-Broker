@@ -79,7 +79,7 @@ GET http://localhost:3000/callback?code=xxx&state=yyy
 
 ## 🐳 Docker 部署
 
-项目附带 `Dockerfile`，可以直接构建镜像并在容器中运行 Broker。镜像默认将 `NODE_ENV=production`，因此容器运行时应通过环境变量传入 `OAUTH_STATE_SECRET`（不要依赖仓库内的 `.env`，因为生产镜像会跳过本地 `.env` 加载器）。
+镜像默认将 `NODE_ENV=production`，因此容器运行时应通过环境变量传入 `OAUTH_STATE_SECRET`（不要依赖仓库内的 `.env`，因为生产镜像会跳过本地 `.env` 加载器）。
 
 构建镜像：
 
@@ -90,11 +90,25 @@ docker build -t voicehub-auth-broker .
 以生产模式运行（通过 `--env-file` 或 `-e` 提供密钥）：
 
 ```bash
-docker run -p 3000:3000 --env OAUTH_STATE_SECRET=your_super_secret_key --name vhb voicehub-auth-broker
+docker run -p 3000:3000 --env OAUTH_STATE_SECRET=your_super_secret_key --name voicehub-auth-broker voicehub-auth-broker
 ```
 
 如果你想在容器中使用仓库根的 `.env`（仅用于本地调试），可以在运行时将 `NODE_ENV` 设为非 `production`，并挂载 `.env` 文件：
 
 ```bash
-docker run -p 3000:3000 --env-file .env -e NODE_ENV=development -v "$PWD/.env":/usr/src/app/.env --name vhb-debug voicehub-auth-broker
+docker run -p 3000:3000 --env-file .env -e NODE_ENV=development -v "$PWD/.env":/usr/src/app/.env --name voicehub-auth-broker-debug voicehub-auth-broker
+```
+
+### 若想使用预构建镜像：
+
+以生产模式运行（通过 `--env-file` 或 `-e` 提供密钥）：
+
+```bash
+docker run -p 3000:3000 --env OAUTH_STATE_SECRET=your_super_secret_key --name voicehub-auth-broker ghcr.io/lirzh/voicehub-auth-broker:1.0.0
+```
+
+如果你想在容器中使用仓库根的 `.env`（仅用于本地调试），可以在运行时将 `NODE_ENV` 设为非 `production`，并挂载 `.env` 文件：
+
+```bash
+docker run -p 3000:3000 --env-file .env -e NODE_ENV=development -v "$PWD/.env":/usr/src/app/.env --name voicehub-auth-broker-debug ghcr.io/lirzh/voicehub-auth-broker:1.0.0
 ```
