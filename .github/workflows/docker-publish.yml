@@ -19,6 +19,13 @@ jobs:
       - name: Set lowercase repository owner
         run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version: $VERSION"
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -39,6 +46,6 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO_OWNER }}/voicehub-auth-broker:latest
-            ghcr.io/${{ env.REPO_OWNER }}/voicehub-auth-broker:${{ github.sha }}
+            ghcr.io/${{ env.REPO_OWNER }}/voicehub-auth-broker:${{ env.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
